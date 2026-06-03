@@ -13,23 +13,74 @@
 
   <main class="page">
     <section class="timer-card">
-      <p class="label">Session du soir</p>
-      <div class="timer">10:00</div>
-      <p class="hint">Durée choisie pour une séance courte avant de dormir.</p>
+      <p class="label">Session libre</p>
+      <app-timer-circle [status]="status" [hint]="hint" />
+      <p class="hint">{{ estimatedEndTime }}</p>
+
       <div class="actions">
-        <button type="button">Démarrer</button>
-        <button type="button" class="secondary">Réinitialiser</button>
+        @if (status.state === 'idle') {
+          <ion-button (click)="start()" shape="round" size="large">
+            <ion-icon slot="start" name="play" />
+            Démarrer
+          </ion-button>
+        }
+
+        @if (status.state === 'running') {
+          <ion-button (click)="pause()" fill="outline" shape="round" size="large">
+            <ion-icon slot="start" name="pause" />
+            Pause
+          </ion-button>
+        }
+
+        @if (status.state === 'paused') {
+          <ion-button (click)="resume()" shape="round" size="large">
+            <ion-icon slot="start" name="play" />
+            Reprendre
+          </ion-button>
+          <ion-button (click)="stop()" fill="outline" shape="round" size="large">
+            <ion-icon slot="start" name="stop" />
+            Stop
+          </ion-button>
+        }
+
+        @if (status.state === 'completed') {
+          <ion-button (click)="close()" shape="round" size="large">
+            Terminer
+          </ion-button>
+        }
       </div>
+
+      @if (status.state === 'running' || status.state === 'paused') {
+        <div class="adjustments" aria-label="Ajuster la durée">
+          <ion-button (click)="decreaseDuration()" fill="clear">
+            <ion-icon slot="start" name="remove" />
+            -1 min
+          </ion-button>
+          <ion-button (click)="increaseDuration()" fill="clear">
+            <ion-icon slot="start" name="add" />
+            +1 min
+          </ion-button>
+        </div>
+      }
     </section>
 
-    <section class="choices">
-      <h2>Durées proposées</h2>
-      <div>
-        <span>5 min</span>
-        <span class="active">10 min</span>
-        <span>15 min</span>
-      </div>
-    </section>
+    @if (status.state === 'idle') {
+      <ion-list class="choices">
+        <ion-list-header>Durée</ion-list-header>
+        <ion-item>
+          <ion-label>Minutes</ion-label>
+          <ion-select
+            [value]="timerService.duration"
+            (ionChange)="changeDuration($event.detail.value)"
+            interface="popover"
+          >
+            @for (duration of durations; track duration) {
+              <ion-select-option [value]="duration">{{ duration }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+      </ion-list>
+    }
 
     <a class="back" href="/">Retour à l'accueil</a>
   </main>
