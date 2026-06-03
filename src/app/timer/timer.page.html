@@ -1,0 +1,36 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Minuteur</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Minuteur</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <main class="page">
+    <section class="timer-card">
+      <p class="label">Session du soir</p>
+      <div class="timer">10:00</div>
+      <p class="hint">Durée choisie pour une séance courte avant de dormir.</p>
+      <div class="actions">
+        <button type="button">Démarrer</button>
+        <button type="button" class="secondary">Réinitialiser</button>
+      </div>
+    </section>
+
+    <section class="choices">
+      <h2>Durées proposées</h2>
+      <div>
+        <span>5 min</span>
+        <span class="active">10 min</span>
+        <span>15 min</span>
+      </div>
+    </section>
+
+    <a class="back" href="/">Retour à l'accueil</a>
+  </main>
+</ion-content>

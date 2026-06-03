@@ -1,0 +1,41 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Réglages</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Réglages</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <main class="page">
+    <section class="panel">
+      <h1>Préférences</h1>
+      <label>
+        <span>Durée par défaut</span>
+        <select>
+          <option>5 minutes</option>
+          <option selected>10 minutes</option>
+          <option>15 minutes</option>
+        </select>
+      </label>
+      <label>
+        <span>Ambiance sonore</span>
+        <select>
+          <option selected>Silence</option>
+          <option>Pluie légère</option>
+          <option>Forêt</option>
+        </select>
+      </label>
+      <label class="check">
+        <input type="checkbox" checked />
+        <span>Afficher un rappel doux en fin de session</span>
+      </label>
+      <p>Les réglages sont visuels pour le moment. La sauvegarde arrivera avec le stockage local.</p>
+      <a href="/">Retour à l'accueil</a>
+    </section>
+  </main>
+</ion-content>

@@ -1,0 +1,38 @@
+.page {
+  padding: 28px 20px;
+}
+
+.panel {
+  border: 1px solid var(--ion-color-step-250, #d7d8da);
+  border-radius: 8px;
+  margin: 0 auto;
+  max-width: 620px;
+  padding: 18px;
+}
+
+h1 {
+  font-size: 26px;
+  margin: 0 0 16px;
+}
+
+article {
+  border-bottom: 1px solid var(--ion-color-step-150, #ececec);
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+}
+
+article span,
+.note {
+  color: var(--ion-color-medium);
+}
+
+.note {
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+  font-weight: 600;
+}

@@ -1,0 +1,27 @@
+.page {
+  padding: 28px 20px;
+}
+
+.panel {
+  border: 1px solid var(--ion-color-step-250, #d7d8da);
+  border-radius: 8px;
+  margin: 0 auto;
+  max-width: 620px;
+  padding: 18px;
+}
+
+h1 {
+  font-size: 26px;
+  margin: 0 0 12px;
+}
+
+p {
+  color: var(--ion-color-medium);
+  line-height: 1.5;
+  margin: 0 0 14px;
+}
+
+a {
+  color: inherit;
+  font-weight: 600;
+}

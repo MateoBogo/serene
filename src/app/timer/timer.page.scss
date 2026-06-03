@@ -1,0 +1,77 @@
+.page {
+  padding: 28px 20px;
+}
+
+.timer-card,
+.choices {
+  border: 1px solid var(--ion-color-step-250, #d7d8da);
+  border-radius: 8px;
+  margin: 0 auto 16px;
+  max-width: 560px;
+  padding: 18px;
+}
+
+.label,
+.hint {
+  color: var(--ion-color-medium);
+  margin: 0;
+}
+
+.timer {
+  font-size: 58px;
+  font-weight: 700;
+  letter-spacing: 0;
+  margin: 18px 0 8px;
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+button {
+  background: var(--ion-text-color);
+  border: 0;
+  border-radius: 6px;
+  color: var(--ion-background-color);
+  font-weight: 600;
+  padding: 11px 14px;
+}
+
+button.secondary {
+  background: transparent;
+  border: 1px solid var(--ion-color-step-250, #d7d8da);
+  color: inherit;
+}
+
+h2 {
+  font-size: 18px;
+  margin: 0 0 12px;
+}
+
+.choices div {
+  display: flex;
+  gap: 10px;
+}
+
+.choices span {
+  border: 1px solid var(--ion-color-step-250, #d7d8da);
+  border-radius: 999px;
+  padding: 7px 12px;
+}
+
+.choices .active {
+  background: var(--ion-text-color);
+  color: var(--ion-background-color);
+}
+
+.back {
+  color: inherit;
+  display: block;
+  font-weight: 600;
+  margin: 0 auto;
+  max-width: 560px;
+}
