@@ -1,5 +1,6 @@
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 
+import { SessionService } from '../services/session.service';
 import { SoundService } from '../services/sound.service';
 import { TimerService } from '../services/timer.service';
 import { TimerPage } from './timer.page';
@@ -37,5 +38,25 @@ describe('TimerPage', () => {
     expect(component.isPreparing).toBeFalse();
     expect(soundService.playStart).toHaveBeenCalledTimes(2);
     expect(timerService.start).toHaveBeenCalled();
+  }));
+
+  it('should save a session when timer is completed', fakeAsync(() => {
+    const sessionService = TestBed.inject(SessionService);
+    const soundService = TestBed.inject(SoundService);
+    const timerService = TestBed.inject(TimerService);
+    spyOn(sessionService, 'addCompletedSession');
+    spyOn(soundService, 'playStart');
+    spyOn(soundService, 'playAmbiance');
+    spyOn(soundService, 'playEnd');
+
+    component.changeDuration(1);
+    component.start();
+    tick(10000);
+    timerService.adjustDuration(-1);
+
+    expect(sessionService.addCompletedSession).toHaveBeenCalledWith({
+      ambiance: 'rain',
+      durationSeconds: 60,
+    });
   }));
 });

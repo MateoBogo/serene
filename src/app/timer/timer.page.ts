@@ -18,6 +18,7 @@ import { add, pause, play, remove, stop } from 'ionicons/icons';
 import { interval, Subscription } from 'rxjs';
 
 import { TimerCircleComponent } from '../components/timer-circle/timer-circle.component';
+import { SessionService } from '../services/session.service';
 import { AmbianceKey, SoundService } from '../services/sound.service';
 import { TimerService, TimerStatus } from '../services/timer.service';
 
@@ -57,6 +58,7 @@ export class TimerPage implements OnDestroy {
   isPreparing = false;
   preparationRemaining = this.preparationDuration;
   selectedAmbiance: AmbianceKey = 'rain';
+  readonly sessionService = inject(SessionService);
   readonly soundService = inject(SoundService);
   readonly timerService = inject(TimerService);
   readonly ambiances = this.soundService.ambiances;
@@ -72,6 +74,10 @@ export class TimerPage implements OnDestroy {
       this.hint = this.getHint(status.state);
 
       if (status.state === 'completed' && this.previousState !== 'completed') {
+        this.sessionService.addCompletedSession({
+          ambiance: this.selectedAmbiance,
+          durationSeconds: status.totalSeconds,
+        });
         this.soundService.playEnd();
       }
 

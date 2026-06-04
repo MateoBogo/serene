@@ -16,22 +16,23 @@
       <h1>Semaine en cours</h1>
       <div class="stats">
         <article>
-          <strong>30</strong>
+          <strong>{{ totalMinutes }}</strong>
           <span>minutes</span>
         </article>
         <article>
-          <strong>3</strong>
+          <strong>{{ sessionCount }}</strong>
           <span>sessions</span>
         </article>
         <article>
-          <strong>10</strong>
+          <strong>{{ averageMinutes }}</strong>
           <span>min en moyenne</span>
         </article>
       </div>
-      <p>
-        Pour l'instant les chiffres sont fixes. La prochaine étape sera de les
-        calculer depuis l'historique enregistré dans le téléphone.
-      </p>
+      @if (sessionCount === 0) {
+        <p>Aucune session terminée cette semaine pour le moment.</p>
+      } @else {
+        <p>Ces chiffres sont calculés avec les sessions terminées sur les 7 derniers jours.</p>
+      }
       <a href="/">Retour à l'accueil</a>
     </section>
   </main>
