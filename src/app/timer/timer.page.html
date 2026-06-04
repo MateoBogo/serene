@@ -11,28 +11,39 @@
     </ion-toolbar>
   </ion-header>
 
-  <main class="page">
-    <section class="timer-card">
-      <p class="label">Session libre</p>
-      <app-timer-circle [status]="status" [hint]="hint" />
+  <main class="page" [class.preparing]="isPreparing">
+    <section class="timer-card" [class.preparing-card]="isPreparing">
+      <div class="session-meta">
+        <p class="label">{{ isPreparing ? 'Préparation' : 'Session libre' }}</p>
+        <p class="ambiance">Ambiance : {{ selectedAmbianceLabel }}</p>
+      </div>
+
+      <app-timer-circle [status]="circleStatus" [hint]="circleHint" [preparing]="isPreparing" />
       <p class="hint">{{ estimatedEndTime }}</p>
 
       <div class="actions">
-        @if (status.state === 'idle') {
+        @if (!isPreparing && status.state === 'idle') {
           <ion-button (click)="start()" shape="round" size="large">
             <ion-icon slot="start" name="play" />
             Démarrer
           </ion-button>
         }
 
-        @if (status.state === 'running') {
+        @if (isPreparing) {
+          <ion-button (click)="stop()" fill="outline" shape="round" size="large">
+            <ion-icon slot="start" name="stop" />
+            Stop
+          </ion-button>
+        }
+
+        @if (!isPreparing && status.state === 'running') {
           <ion-button (click)="pause()" fill="outline" shape="round" size="large">
             <ion-icon slot="start" name="pause" />
             Pause
           </ion-button>
         }
 
-        @if (status.state === 'paused') {
+        @if (!isPreparing && status.state === 'paused') {
           <ion-button (click)="resume()" shape="round" size="large">
             <ion-icon slot="start" name="play" />
             Reprendre
@@ -43,14 +54,14 @@
           </ion-button>
         }
 
-        @if (status.state === 'completed') {
+        @if (!isPreparing && status.state === 'completed') {
           <ion-button (click)="close()" shape="round" size="large">
             Terminer
           </ion-button>
         }
       </div>
 
-      @if (status.state === 'running' || status.state === 'paused') {
+      @if (!isPreparing && (status.state === 'running' || status.state === 'paused')) {
         <div class="adjustments" aria-label="Ajuster la durée">
           <ion-button (click)="decreaseDuration()" fill="clear">
             <ion-icon slot="start" name="remove" />
@@ -64,7 +75,7 @@
       }
     </section>
 
-    @if (status.state === 'idle') {
+    @if (!isPreparing && status.state === 'idle') {
       <ion-list class="choices">
         <ion-list-header>Durée</ion-list-header>
         <ion-item>
@@ -76,6 +87,18 @@
           >
             @for (duration of durations; track duration) {
               <ion-select-option [value]="duration">{{ duration }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label>Ambiance</ion-label>
+          <ion-select
+            [value]="selectedAmbiance"
+            (ionChange)="changeAmbiance($event.detail.value)"
+            interface="popover"
+          >
+            @for (ambiance of ambiances; track ambiance.value) {
+              <ion-select-option [value]="ambiance.value">{{ ambiance.label }}</ion-select-option>
             }
           </ion-select>
         </ion-item>

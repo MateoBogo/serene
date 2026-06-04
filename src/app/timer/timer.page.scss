@@ -1,25 +1,54 @@
 .page {
-  padding: 28px 20px;
+  padding: 34px 20px;
+  width: 100%;
 }
 
 .timer-card,
 .choices {
-  border: 1px solid var(--ion-color-step-250, #d7d8da);
+  box-sizing: border-box;
+  border: 1px solid var(--serene-border);
   border-radius: 8px;
   margin: 0 auto 16px;
   max-width: 560px;
-  padding: 18px;
+  padding: 22px;
+  width: 100%;
+}
+
+.timer-card {
+  box-shadow: 0 18px 36px var(--serene-shadow);
+}
+
+.preparing-card {
+  border-color: var(--serene-preparation);
+  box-shadow: 0 18px 36px rgba(139, 105, 43, 0.16);
+}
+
+.session-meta {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  justify-content: center;
+  margin-bottom: 16px;
 }
 
 .label {
   color: var(--ion-color-medium);
-  margin: 0 0 10px;
-  text-align: center;
+  font-size: 0.82rem;
+  letter-spacing: 0;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.ambiance {
+  font-weight: 600;
+  margin: 0;
+  text-align: left;
 }
 
 .hint {
   color: var(--ion-color-medium);
-  margin: 6px 0 0;
+  margin: 10px 0 0;
   text-align: center;
 }
 
@@ -51,7 +80,6 @@
 }
 
 .back {
-  color: inherit;
   display: block;
   font-weight: 600;
   margin: 0 auto;

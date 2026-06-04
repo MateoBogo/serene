@@ -22,10 +22,10 @@ label {
 }
 
 select {
-  background: transparent;
-  border: 1px solid var(--ion-color-step-250, #d7d8da);
+  background: var(--serene-surface-soft);
+  border: 1px solid var(--serene-border);
   border-radius: 6px;
-  color: inherit;
+  color: var(--serene-text);
   padding: 10px;
 }
 

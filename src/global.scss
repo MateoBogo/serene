@@ -34,4 +34,111 @@
 
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import '@ionic/angular/css/palettes/dark.system.css';
+/* @import '@ionic/angular/css/palettes/dark.system.css'; */
+
+html,
+body,
+ion-app {
+  background: var(--serene-background);
+  color: var(--serene-text);
+  overflow-x: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+ion-content {
+  --background: var(--serene-background);
+  color: var(--serene-text);
+}
+
+ion-toolbar {
+  --background: var(--serene-primary-dark);
+  --border-color: rgba(245, 238, 223, 0.18);
+  --color: #fffaf0;
+}
+
+ion-title {
+  font-weight: 700;
+}
+
+a {
+  color: var(--serene-primary-dark);
+}
+
+.page {
+  background: var(--serene-background);
+  min-height: 100%;
+  overflow-x: hidden;
+  width: 100%;
+}
+
+.intro,
+.cards,
+.panel,
+.timer-card,
+.choices {
+  inline-size: 100%;
+}
+
+.panel,
+.primary-link,
+.cards a,
+.timer-card,
+.choices {
+  background: var(--serene-surface);
+  border-color: var(--serene-border);
+}
+
+.panel,
+.timer-card,
+.choices {
+  box-shadow: 0 16px 34px var(--serene-shadow);
+}
+
+ion-list {
+  background: transparent;
+}
+
+ion-item {
+  --background: transparent;
+  --border-color: rgba(83, 104, 77, 0.32);
+  --color: var(--serene-text);
+}
+
+ion-select {
+  color: var(--serene-primary-dark);
+}
+
+select {
+  background: var(--serene-surface-soft);
+  border-color: var(--serene-border);
+  color: var(--serene-text);
+}
+
+ion-button {
+  --background: var(--serene-primary);
+  --background-activated: #596b51;
+  --background-hover: #62765a;
+  --box-shadow: 0 8px 18px rgba(31, 49, 37, 0.18);
+  --color: #fffaf0;
+}
+
+ion-button[fill='outline'] {
+  --background: transparent;
+  --border-color: var(--serene-primary);
+  --box-shadow: none;
+  --color: var(--serene-primary-dark);
+}
+
+@media (max-width: 600px) {
+  .intro,
+  .cards,
+  .panel,
+  .timer-card,
+  .choices,
+  .back {
+    max-width: calc(100vw - 48px);
+  }
+}

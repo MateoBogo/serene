@@ -6,7 +6,12 @@ import { TimerStatus } from '../../services/timer.service';
   selector: 'app-timer-circle',
   standalone: true,
   template: `
-    <svg viewBox="0 0 200 200" role="img" aria-label="Temps restant">
+    <svg
+      viewBox="0 0 200 200"
+      role="img"
+      aria-label="Temps restant"
+      [class.preparing]="preparing"
+    >
       <circle cx="100" cy="100" r="90" class="track" />
       <circle
         cx="100"
@@ -54,6 +59,10 @@ import { TimerStatus } from '../../services/timer.service';
         transition: stroke-dashoffset 200ms ease;
       }
 
+      .preparing .progress {
+        stroke: var(--serene-preparation);
+      }
+
       text {
         fill: var(--ion-text-color);
       }
@@ -61,6 +70,10 @@ import { TimerStatus } from '../../services/timer.service';
       .value {
         font-size: 30px;
         font-weight: 700;
+      }
+
+      .preparing .value {
+        fill: var(--serene-preparation);
       }
 
       .hint {
@@ -73,6 +86,7 @@ import { TimerStatus } from '../../services/timer.service';
 export class TimerCircleComponent {
   @Input({ required: true }) status!: TimerStatus;
   @Input() hint = 'Prêt à méditer';
+  @Input() preparing = false;
 
   readonly circumference = 565.48;
 

@@ -34,7 +34,9 @@ h1 {
 }
 
 .primary-link {
+  background: var(--serene-primary);
   border-radius: 8px;
+  color: #fffaf0;
   font-weight: 600;
   padding: 12px 14px;
   width: fit-content;
