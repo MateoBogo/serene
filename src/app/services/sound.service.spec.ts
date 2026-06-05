@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { SoundService } from './sound.service';
+import { AmbianceKey, SoundService } from './sound.service';
 
 describe('SoundService', () => {
   let service: SoundService;
@@ -45,9 +45,26 @@ describe('SoundService', () => {
     service.playAmbiance('rain');
 
     const ambiance = createdAudios[createdAudios.length - 1];
-    expect(ambiance?.src).toContain('rain.ogg');
+    expect(ambiance?.src).toContain('rain.mp3');
     expect(ambiance?.loop).toBeTrue();
     expect(ambiance?.play).toHaveBeenCalled();
+  });
+
+  it('should offer wind and light storm ambiances', () => {
+    expect(service.ambiances.map((ambiance) => ambiance.label)).toEqual([
+      'Silence',
+      'Pluie douce',
+      'Forêt calme',
+      'Rivière',
+      'Vent doux',
+      'Orage léger',
+    ]);
+
+    service.playAmbiance('wind' as AmbianceKey);
+    expect(createdAudios[createdAudios.length - 1]?.src).toContain('wind.wav');
+
+    service.playAmbiance('storm' as AmbianceKey);
+    expect(createdAudios[createdAudios.length - 1]?.src).toContain('storm.wav');
   });
 
   it('should stop the current ambiance', () => {
