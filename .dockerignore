@@ -1,0 +1,12 @@
+.angular
+.codex
+.git
+.omc
+.vscode
+node_modules
+www
+coverage
+*.log
+ng-serve*.log
+Dockerfile
+docker-compose.yml

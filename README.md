@@ -67,6 +67,32 @@ Verifier le lint :
 npm.cmd run lint
 ```
 
+## Lancer avec Docker Desktop
+
+Le projet contient un `Dockerfile` et un `docker-compose.yml`.
+L'image compile l'application Ionic / Angular puis la sert avec Nginx.
+
+Depuis le dossier du projet :
+
+```bash
+docker compose up -d --build
+```
+
+Puis ouvrir :
+
+```text
+http://localhost:8080/
+```
+
+Dans Docker Desktop, le conteneur apparait sous le nom `serene-app`.
+Il peut ensuite etre demarre, arrete ou relance depuis l'interface.
+
+Pour l'arreter en ligne de commande :
+
+```bash
+docker compose down
+```
+
 ## Notes
 
 Le projet est encore en cours. Certaines donnees sont encore des exemples, le
