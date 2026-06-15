@@ -19,6 +19,7 @@ import { interval, Subscription } from 'rxjs';
 
 import { TimerCircleComponent } from '../components/timer-circle/timer-circle.component';
 import { SessionService } from '../services/session.service';
+import { SettingsService } from '../services/settings.service';
 import { AmbianceKey, SoundService } from '../services/sound.service';
 import { TimerService, TimerStatus } from '../services/timer.service';
 
@@ -66,6 +67,7 @@ export class TimerPage implements OnDestroy {
   preparationRemaining = this.preparationDuration;
   selectedAmbiance: AmbianceKey = 'rain';
   readonly sessionService = inject(SessionService);
+  readonly settingsService = inject(SettingsService);
   readonly soundService = inject(SoundService);
   readonly timerService = inject(TimerService);
   readonly ambiances = this.soundService.ambiances;
@@ -75,6 +77,13 @@ export class TimerPage implements OnDestroy {
 
   constructor() {
     addIcons({ add, chevronDown, chevronUp, pause, play, remove, stop });
+
+    const settings = this.settingsService.snapshot;
+    this.selectedAmbiance = settings.defaultAmbiance;
+    this.durationHours = Math.floor(settings.defaultDurationMinutes / 60);
+    this.durationMinutes = settings.defaultDurationMinutes % 60;
+    this.durationSeconds = 0;
+    this.timerService.setDuration(settings.defaultDurationMinutes);
 
     this.sub = this.timerService.status$.subscribe((status) => {
       this.status = status;
