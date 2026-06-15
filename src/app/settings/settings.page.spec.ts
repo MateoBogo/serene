@@ -7,6 +7,8 @@ describe('SettingsPage', () => {
   let fixture: ComponentFixture<SettingsPage>;
 
   beforeEach(async () => {
+    localStorage.clear();
+
     fixture = TestBed.createComponent(SettingsPage);
     component = fixture.componentInstance;
     fixture.detectChanges();

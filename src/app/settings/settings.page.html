@@ -14,27 +14,44 @@
   <main class="page">
     <section class="panel">
       <h1>Préférences</h1>
-      <label>
-        <span>Durée par défaut</span>
-        <select>
-          <option>5 minutes</option>
-          <option selected>10 minutes</option>
-          <option>15 minutes</option>
-        </select>
-      </label>
-      <label>
-        <span>Ambiance sonore</span>
-        <select>
-          <option selected>Silence</option>
-          <option>Pluie légère</option>
-          <option>Forêt</option>
-        </select>
-      </label>
-      <label class="check">
-        <input type="checkbox" checked />
-        <span>Afficher un rappel doux en fin de session</span>
-      </label>
-      <p>Les réglages sont visuels pour le moment. La sauvegarde arrivera avec le stockage local.</p>
+
+      <ion-list>
+        <ion-item>
+          <ion-label>Durée par défaut</ion-label>
+          <ion-select
+            [value]="defaultDurationMinutes"
+            interface="popover"
+            (ionChange)="onDurationChange($event.detail.value)"
+          >
+            @for (minutes of durationOptions; track minutes) {
+              <ion-select-option [value]="minutes">{{ minutes }} minutes</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Ambiance par défaut</ion-label>
+          <ion-select
+            [value]="defaultAmbiance"
+            interface="popover"
+            (ionChange)="onAmbianceChange($event.detail.value)"
+          >
+            @for (ambiance of ambiances; track ambiance.value) {
+              <ion-select-option [value]="ambiance.value">{{ ambiance.label }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Rappel doux en fin de session</ion-label>
+          <ion-toggle
+            [checked]="reminder"
+            (ionChange)="onReminderChange($event.detail.checked)"
+          />
+        </ion-item>
+      </ion-list>
+
+      <p>Les réglages sont enregistrés automatiquement sur cet appareil.</p>
       <a href="/">Retour à l'accueil</a>
     </section>
   </main>
