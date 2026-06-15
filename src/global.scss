@@ -54,9 +54,9 @@ ion-content {
 }
 
 ion-toolbar {
-  --background: var(--serene-primary-dark);
-  --border-color: rgba(245, 238, 223, 0.18);
-  --color: #fffaf0;
+  --background: var(--serene-toolbar);
+  --border-color: var(--serene-item-border);
+  --color: var(--serene-toolbar-color);
 }
 
 ion-title {
@@ -103,7 +103,7 @@ ion-list {
 
 ion-item {
   --background: transparent;
-  --border-color: rgba(83, 104, 77, 0.32);
+  --border-color: var(--serene-item-border);
   --color: var(--serene-text);
 }
 
@@ -119,10 +119,10 @@ select {
 
 ion-button {
   --background: var(--serene-primary);
-  --background-activated: #596b51;
-  --background-hover: #62765a;
-  --box-shadow: 0 8px 18px rgba(31, 49, 37, 0.18);
-  --color: #fffaf0;
+  --background-activated: var(--serene-button-active);
+  --background-hover: var(--serene-button-hover);
+  --box-shadow: 0 8px 18px var(--serene-button-shadow);
+  --color: var(--ion-color-primary-contrast);
 }
 
 ion-button[fill='outline'] {

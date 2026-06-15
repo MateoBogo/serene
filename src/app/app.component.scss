@@ -1,0 +1,47 @@
+.theme-toggle {
+  --background: rgba(255, 250, 240, 0.18);
+  --background-hover: rgba(255, 250, 240, 0.32);
+  --background-activated: rgba(255, 250, 240, 0.4);
+  --border-radius: 50%;
+  --border-width: 1.5px;
+  --border-style: solid;
+  --border-color: rgba(255, 250, 240, 0.55);
+  --box-shadow: 0 6px 16px rgba(20, 30, 22, 0.28);
+  --color: var(--serene-toolbar-color);
+  --padding-bottom: 0;
+  --padding-end: 0;
+  --padding-start: 0;
+  --padding-top: 0;
+  --ripple-color: rgba(255, 250, 240, 0.4);
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  block-size: 44px;
+  inline-size: 44px;
+  inset-block-start: calc(env(safe-area-inset-top) + 8px);
+  inset-inline-end: 12px;
+  margin: 0;
+  position: fixed;
+  transition: transform 160ms ease;
+  z-index: 20;
+}
+
+.theme-toggle:hover {
+  transform: translateY(-1px);
+}
+
+.theme-toggle:active {
+  transform: scale(0.94);
+}
+
+.theme-toggle ion-icon {
+  font-size: 22px;
+}
+
+:host-context(.serene-dark) .theme-toggle {
+  --background: rgba(20, 30, 22, 0.42);
+  --background-hover: rgba(30, 44, 32, 0.55);
+  --background-activated: rgba(40, 56, 42, 0.62);
+  --border-color: rgba(214, 226, 196, 0.45);
+  --box-shadow: 0 6px 16px rgba(6, 11, 8, 0.4);
+}

@@ -1,3 +1,14 @@
 <ion-app>
+  <ion-button
+    class="theme-toggle"
+    fill="clear"
+    shape="round"
+    [attr.aria-label]="themeLabel"
+    [title]="themeLabel"
+    (click)="toggleTheme()"
+  >
+    <ion-icon [name]="themeIcon" />
+  </ion-button>
+
   <ion-router-outlet></ion-router-outlet>
 </ion-app>
