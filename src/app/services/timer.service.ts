@@ -8,26 +8,30 @@ export interface TimerStatus {
   totalSeconds: number;
   progress: number;
   state: TimerState;
+  hours: number;
   minutes: number;
   seconds: number;
 }
+
+const MIN_DURATION_SECONDS = 30;
+const MAX_DURATION_SECONDS = 9 * 60 * 60 + 59 * 60 + 59;
 
 @Injectable({
   providedIn: 'root',
 })
 export class TimerService {
-  private readonly duration$ = new BehaviorSubject<number>(10);
+  private readonly durationSeconds$ = new BehaviorSubject<number>(10 * 60);
   private readonly remaining$ = new BehaviorSubject<number>(10 * 60);
   private readonly state$ = new BehaviorSubject<TimerState>('idle');
   private tickSubscription?: Subscription;
 
   readonly status$: Observable<TimerStatus> = combineLatest([
-    this.duration$,
+    this.durationSeconds$,
     this.remaining$,
     this.state$,
   ]).pipe(
-    map(([duration, remaining, state]) => {
-      const total = duration * 60;
+    map(([durationSeconds, remaining, state]) => {
+      const total = durationSeconds;
       const safeRemaining = Math.max(0, remaining);
 
       return {
@@ -35,24 +39,33 @@ export class TimerService {
         totalSeconds: total,
         progress: total > 0 ? safeRemaining / total : 0,
         state,
-        minutes: Math.floor(safeRemaining / 60),
+        hours: Math.floor(safeRemaining / 3600),
+        minutes: Math.floor((safeRemaining % 3600) / 60),
         seconds: safeRemaining % 60,
       };
     }),
   );
 
   get duration(): number {
-    return this.duration$.value;
+    return Math.floor(this.durationSeconds$.value / 60);
+  }
+
+  get durationSeconds(): number {
+    return this.durationSeconds$.value;
   }
 
   setDuration(minutes: number): void {
+    this.setDurationSeconds(Number(minutes) * 60);
+  }
+
+  setDurationSeconds(seconds: number): void {
     if (this.state$.value === 'running' || this.state$.value === 'paused') {
       return;
     }
 
-    const nextDuration = Number(minutes);
-    this.duration$.next(nextDuration);
-    this.remaining$.next(nextDuration * 60);
+    const nextDuration = this.normalizeDurationSeconds(seconds);
+    this.durationSeconds$.next(nextDuration);
+    this.remaining$.next(nextDuration);
     this.state$.next('idle');
   }
 
@@ -62,7 +75,7 @@ export class TimerService {
     }
 
     if (this.state$.value === 'idle' || this.state$.value === 'completed') {
-      this.remaining$.next(this.duration$.value * 60);
+      this.remaining$.next(this.durationSeconds$.value);
     }
 
     this.state$.next('running');
@@ -89,7 +102,7 @@ export class TimerService {
 
   stop(): void {
     this.stopTicking();
-    this.remaining$.next(this.duration$.value * 60);
+    this.remaining$.next(this.durationSeconds$.value);
     this.state$.next('idle');
   }
 
@@ -98,10 +111,14 @@ export class TimerService {
       return;
     }
 
-    const nextDuration = Math.max(1, this.duration$.value + deltaMinutes);
-    const nextRemaining = Math.max(0, this.remaining$.value + deltaMinutes * 60);
+    const deltaSeconds = deltaMinutes * 60;
+    const nextRemaining = Math.max(0, this.remaining$.value + deltaSeconds);
+    const nextDuration =
+      nextRemaining === 0
+        ? this.durationSeconds$.value
+        : this.normalizeDurationSeconds(this.durationSeconds$.value + deltaSeconds);
 
-    this.duration$.next(nextDuration);
+    this.durationSeconds$.next(nextDuration);
     this.remaining$.next(nextRemaining);
 
     if (nextRemaining === 0) {
@@ -132,4 +149,13 @@ export class TimerService {
     this.tickSubscription = undefined;
   }
 
+  private normalizeDurationSeconds(seconds: number): number {
+    const nextSeconds = Math.floor(Number(seconds));
+
+    if (Number.isNaN(nextSeconds)) {
+      return MIN_DURATION_SECONDS;
+    }
+
+    return Math.min(MAX_DURATION_SECONDS, Math.max(MIN_DURATION_SECONDS, nextSeconds));
+  }
 }

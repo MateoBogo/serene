@@ -78,18 +78,81 @@
     @if (!isPreparing && status.state === 'idle') {
       <ion-list class="choices">
         <ion-list-header>Durée</ion-list-header>
-        <ion-item>
-          <ion-label>Minutes</ion-label>
-          <ion-select
-            [value]="timerService.duration"
-            (ionChange)="changeDuration($event.detail.value)"
-            interface="popover"
-          >
-            @for (duration of durations; track duration) {
-              <ion-select-option [value]="duration">{{ duration }}</ion-select-option>
-            }
-          </ion-select>
-        </ion-item>
+        <div class="duration-picker" aria-label="Choisir la durée">
+          <div class="duration-column">
+            <ion-button
+              class="wheel-button"
+              fill="clear"
+              aria-label="Ajouter une heure"
+              [disabled]="durationHours >= maxHours"
+              (click)="changeTime('hours', 1)"
+            >
+              <ion-icon name="chevron-up" />
+            </ion-button>
+            <strong>{{ pad(durationHours) }}</strong>
+            <ion-button
+              class="wheel-button"
+              fill="clear"
+              aria-label="Retirer une heure"
+              [disabled]="durationHours <= 0"
+              (click)="changeTime('hours', -1)"
+            >
+              <ion-icon name="chevron-down" />
+            </ion-button>
+            <span>h</span>
+          </div>
+
+          <span class="duration-separator">:</span>
+
+          <div class="duration-column">
+            <ion-button
+              class="wheel-button"
+              fill="clear"
+              aria-label="Ajouter une minute"
+              [disabled]="durationMinutes >= 59"
+              (click)="changeTime('minutes', 1)"
+            >
+              <ion-icon name="chevron-up" />
+            </ion-button>
+            <strong>{{ pad(durationMinutes) }}</strong>
+            <ion-button
+              class="wheel-button"
+              fill="clear"
+              aria-label="Retirer une minute"
+              [disabled]="durationMinutes <= 0"
+              (click)="changeTime('minutes', -1)"
+            >
+              <ion-icon name="chevron-down" />
+            </ion-button>
+            <span>m</span>
+          </div>
+
+          <span class="duration-separator">:</span>
+
+          <div class="duration-column active">
+            <ion-button
+              class="wheel-button"
+              fill="clear"
+              aria-label="Ajouter une seconde"
+              [disabled]="durationSeconds >= 59"
+              (click)="changeTime('seconds', 1)"
+            >
+              <ion-icon name="chevron-up" />
+            </ion-button>
+            <strong>{{ pad(durationSeconds) }}</strong>
+            <ion-button
+              class="wheel-button"
+              fill="clear"
+              aria-label="Retirer une seconde"
+              [disabled]="durationHours === 0 && durationMinutes === 0 && durationSeconds <= minDurationSeconds"
+              (click)="changeTime('seconds', -1)"
+            >
+              <ion-icon name="chevron-down" />
+            </ion-button>
+            <span>s</span>
+          </div>
+        </div>
+        <p class="duration-preview">Durée choisie : {{ durationPreview }}</p>
         <ion-item>
           <ion-label>Ambiance</ion-label>
           <ion-select

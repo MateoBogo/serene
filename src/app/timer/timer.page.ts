@@ -14,13 +14,15 @@ import {
   IonToolbar,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { add, pause, play, remove, stop } from 'ionicons/icons';
+import { add, chevronDown, chevronUp, pause, play, remove, stop } from 'ionicons/icons';
 import { interval, Subscription } from 'rxjs';
 
 import { TimerCircleComponent } from '../components/timer-circle/timer-circle.component';
 import { SessionService } from '../services/session.service';
 import { AmbianceKey, SoundService } from '../services/sound.service';
 import { TimerService, TimerStatus } from '../services/timer.service';
+
+type DurationPart = 'hours' | 'minutes' | 'seconds';
 
 @Component({
   selector: 'app-timer',
@@ -48,13 +50,18 @@ export class TimerPage implements OnDestroy {
     totalSeconds: 600,
     progress: 1,
     state: 'idle',
+    hours: 0,
     minutes: 10,
     seconds: 0,
   };
 
   hint = 'Prêt à méditer';
-  readonly durations = [5, 10, 15, 20, 30, 45, 60];
+  readonly maxHours = 9;
   readonly preparationDuration = 10;
+  readonly minDurationSeconds = 30;
+  durationHours = 0;
+  durationMinutes = 10;
+  durationSeconds = 0;
   isPreparing = false;
   preparationRemaining = this.preparationDuration;
   selectedAmbiance: AmbianceKey = 'rain';
@@ -67,7 +74,7 @@ export class TimerPage implements OnDestroy {
   private previousState = this.status.state;
 
   constructor() {
-    addIcons({ add, pause, play, remove, stop });
+    addIcons({ add, chevronDown, chevronUp, pause, play, remove, stop });
 
     this.sub = this.timerService.status$.subscribe((status) => {
       this.status = status;
@@ -95,6 +102,7 @@ export class TimerPage implements OnDestroy {
       totalSeconds: this.preparationDuration,
       progress: this.preparationRemaining / this.preparationDuration,
       state: 'running',
+      hours: 0,
       minutes: 0,
       seconds: this.preparationRemaining,
     };
@@ -124,6 +132,10 @@ export class TimerPage implements OnDestroy {
     });
 
     return `Fin estimée : ${time}`;
+  }
+
+  get durationPreview(): string {
+    return this.formatDuration(this.selectedDurationSeconds);
   }
 
   start(): void {
@@ -158,12 +170,28 @@ export class TimerPage implements OnDestroy {
     this.soundService.stopAll();
   }
 
-  changeDuration(value: number): void {
-    this.timerService.setDuration(Number(value));
-  }
-
   changeAmbiance(value: AmbianceKey): void {
     this.selectedAmbiance = value;
+  }
+
+  changeTime(part: DurationPart, delta: number): void {
+    if (this.isPreparing || this.status.state !== 'idle') {
+      return;
+    }
+
+    if (part === 'hours') {
+      this.durationHours = this.clamp(this.durationHours + delta, 0, this.maxHours);
+    }
+
+    if (part === 'minutes') {
+      this.durationMinutes = this.clamp(this.durationMinutes + delta, 0, 59);
+    }
+
+    if (part === 'seconds') {
+      this.durationSeconds = this.clamp(this.durationSeconds + delta, 0, 59);
+    }
+
+    this.applyPickerDuration();
   }
 
   increaseDuration(): void {
@@ -205,6 +233,39 @@ export class TimerPage implements OnDestroy {
     this.preparationSub = undefined;
     this.isPreparing = false;
     this.preparationRemaining = this.preparationDuration;
+  }
+
+  private applyPickerDuration(): void {
+    let totalSeconds = this.selectedDurationSeconds;
+
+    if (totalSeconds < this.minDurationSeconds) {
+      totalSeconds = this.minDurationSeconds;
+      this.durationHours = 0;
+      this.durationMinutes = 0;
+      this.durationSeconds = this.minDurationSeconds;
+    }
+
+    this.timerService.setDurationSeconds(totalSeconds);
+  }
+
+  private get selectedDurationSeconds(): number {
+    return this.durationHours * 3600 + this.durationMinutes * 60 + this.durationSeconds;
+  }
+
+  private formatDuration(totalSeconds: number): string {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    return `${this.pad(hours)}:${this.pad(minutes)}:${this.pad(seconds)}`;
+  }
+
+  pad(value: number): string {
+    return value.toString().padStart(2, '0');
+  }
+
+  private clamp(value: number, min: number, max: number): number {
+    return Math.min(max, Math.max(min, value));
   }
 
   private getHint(state: string): string {

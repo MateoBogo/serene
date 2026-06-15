@@ -10,6 +10,8 @@ describe('TimerPage', () => {
   let fixture: ComponentFixture<TimerPage>;
 
   beforeEach(async () => {
+    localStorage.clear();
+
     fixture = TestBed.createComponent(TimerPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -40,6 +42,20 @@ describe('TimerPage', () => {
     expect(timerService.start).toHaveBeenCalled();
   }));
 
+  it('should update duration from the wheel controls', () => {
+    const timerService = TestBed.inject(TimerService);
+    spyOn(timerService, 'setDurationSeconds').and.callThrough();
+
+    component.changeTime('hours', 1);
+    component.changeTime('seconds', 30);
+
+    expect(component.durationHours).toBe(1);
+    expect(component.durationMinutes).toBe(10);
+    expect(component.durationSeconds).toBe(30);
+    expect(component.durationPreview).toBe('01:10:30');
+    expect(timerService.setDurationSeconds).toHaveBeenCalledWith(4230);
+  });
+
   it('should save a session when timer is completed', fakeAsync(() => {
     const sessionService = TestBed.inject(SessionService);
     const soundService = TestBed.inject(SoundService);
@@ -49,7 +65,7 @@ describe('TimerPage', () => {
     spyOn(soundService, 'playAmbiance');
     spyOn(soundService, 'playEnd');
 
-    component.changeDuration(1);
+    timerService.setDurationSeconds(60);
     component.start();
     tick(10000);
     timerService.adjustDuration(-1);

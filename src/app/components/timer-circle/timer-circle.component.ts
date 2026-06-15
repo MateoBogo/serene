@@ -22,7 +22,7 @@ import { TimerStatus } from '../../services/timer.service';
         [style.stroke-dashoffset]="progressOffset"
       />
       <text x="100" y="94" class="value" text-anchor="middle">
-        {{ pad(status.minutes) }}:{{ pad(status.seconds) }}
+        {{ formatTime(status.remainingSeconds) }}
       </text>
       <text x="100" y="120" class="hint" text-anchor="middle">
         {{ hint }}
@@ -68,7 +68,7 @@ import { TimerStatus } from '../../services/timer.service';
       }
 
       .value {
-        font-size: 30px;
+        font-size: 27px;
         font-weight: 700;
       }
 
@@ -96,5 +96,17 @@ export class TimerCircleComponent {
 
   pad(value: number): string {
     return value.toString().padStart(2, '0');
+  }
+
+  formatTime(totalSeconds: number): string {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (hours > 0) {
+      return `${this.pad(hours)}:${this.pad(minutes)}:${this.pad(seconds)}`;
+    }
+
+    return `${this.pad(minutes)}:${this.pad(seconds)}`;
   }
 }

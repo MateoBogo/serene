@@ -24,6 +24,15 @@ describe('TimerService', () => {
     expect(latest.minutes).toBe(10);
   });
 
+  it('should accept an exact duration in seconds', () => {
+    service.setDurationSeconds(90);
+
+    expect(latest.totalSeconds).toBe(90);
+    expect(latest.remainingSeconds).toBe(90);
+    expect(latest.minutes).toBe(1);
+    expect(latest.seconds).toBe(30);
+  });
+
   it('should tick down once per second after start', fakeAsync(() => {
     service.setDuration(1);
     service.start();
