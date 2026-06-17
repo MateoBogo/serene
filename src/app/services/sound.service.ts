@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 export type AmbianceKey = 'none' | 'rain' | 'forest' | 'river' | 'wind' | 'storm';
 
 export interface AmbianceOption {
+  icon: string;
   label: string;
   value: AmbianceKey;
 }
@@ -12,12 +13,12 @@ export interface AmbianceOption {
 })
 export class SoundService {
   readonly ambiances: AmbianceOption[] = [
-    { label: 'Silence', value: 'none' },
-    { label: 'Pluie douce', value: 'rain' },
-    { label: 'Forêt calme', value: 'forest' },
-    { label: 'Rivière', value: 'river' },
-    { label: 'Vent doux', value: 'wind' },
-    { label: 'Orage léger', value: 'storm' },
+    { icon: 'volume-mute-outline', label: 'Silence', value: 'none' },
+    { icon: 'rainy-outline', label: 'Pluie douce', value: 'rain' },
+    { icon: 'leaf-outline', label: 'Forêt calme', value: 'forest' },
+    { icon: 'water-outline', label: 'Rivière', value: 'river' },
+    { icon: 'cloudy-outline', label: 'Vent doux', value: 'wind' },
+    { icon: 'thunderstorm-outline', label: 'Orage léger', value: 'storm' },
   ];
 
   private readonly startAudio = this.createAudio('assets/sounds/start.mp3');

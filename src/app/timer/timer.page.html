@@ -12,6 +12,25 @@
   </ion-header>
 
   <main class="page" [class.preparing]="isPreparing">
+    <ion-segment class="mode-switch" [value]="mode" (ionChange)="setMode($event.detail.value)">
+      <ion-segment-button value="timer">
+        <ion-label>Minuteur</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="breathing">
+        <ion-label>Respiration</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    @if (mode === 'breathing') {
+      <section class="timer-card breathing-card">
+        <div class="session-meta">
+          <p class="label">Respiration guidée</p>
+          <p class="ambiance">Suis le cercle, au calme</p>
+        </div>
+        <app-breathing />
+      </section>
+      <a class="back" routerLink="/">Retour à l'accueil</a>
+    } @else {
     <section class="timer-card" [class.preparing-card]="isPreparing">
       <div class="session-meta">
         <p class="label">{{ isPreparing ? 'Préparation' : 'Session libre' }}</p>
@@ -23,7 +42,7 @@
 
       <div class="actions">
         @if (!isPreparing && status.state === 'idle') {
-          <ion-button (click)="start()" shape="round" size="large">
+          <ion-button (click)="start()" shape="round" size="large" [disabled]="!canStart">
             <ion-icon slot="start" name="play" />
             Démarrer
           </ion-button>
@@ -55,13 +74,33 @@
         }
 
         @if (!isPreparing && status.state === 'completed') {
+          <div class="mood">
+            <p class="mood-question">Comment te sens-tu ?</p>
+            <div class="mood-options" role="group" aria-label="Choisir une humeur">
+              @for (mood of moods; track mood.value) {
+                <button
+                  type="button"
+                  class="mood-button"
+                  [class.selected]="selectedMood === mood.value"
+                  [attr.aria-label]="mood.label"
+                  [title]="mood.label"
+                  (click)="chooseMood(mood.value)"
+                >
+                  {{ mood.emoji }}
+                </button>
+              }
+            </div>
+            <p class="mood-feedback">
+              {{ selectedMood ? 'Ressenti enregistré.' : 'Optionnel — tu peux passer.' }}
+            </p>
+          </div>
           <ion-button (click)="close()" shape="round" size="large">
             Terminer
           </ion-button>
         }
       </div>
 
-      @if (!isPreparing && (status.state === 'running' || status.state === 'paused')) {
+      @if (!isPreparing && !status.isUnlimited && (status.state === 'running' || status.state === 'paused')) {
         <div class="adjustments" aria-label="Ajuster la durée">
           <ion-button (click)="decreaseDuration()" fill="clear">
             <ion-icon slot="start" name="remove" />
@@ -77,97 +116,79 @@
 
     @if (!isPreparing && status.state === 'idle') {
       <ion-list class="choices">
-        <ion-list-header>Durée</ion-list-header>
-        <div class="duration-picker" aria-label="Choisir la durée">
-          <div class="duration-column">
-            <ion-button
-              class="wheel-button"
-              fill="clear"
-              aria-label="Ajouter une heure"
-              [disabled]="durationHours >= maxHours"
-              (click)="changeTime('hours', 1)"
-            >
-              <ion-icon name="chevron-up" />
-            </ion-button>
-            <strong>{{ pad(durationHours) }}</strong>
-            <ion-button
-              class="wheel-button"
-              fill="clear"
-              aria-label="Retirer une heure"
-              [disabled]="durationHours <= 0"
-              (click)="changeTime('hours', -1)"
-            >
-              <ion-icon name="chevron-down" />
-            </ion-button>
-            <span>h</span>
-          </div>
-
-          <span class="duration-separator">:</span>
-
-          <div class="duration-column">
-            <ion-button
-              class="wheel-button"
-              fill="clear"
-              aria-label="Ajouter une minute"
-              [disabled]="durationMinutes >= 59"
-              (click)="changeTime('minutes', 1)"
-            >
-              <ion-icon name="chevron-up" />
-            </ion-button>
-            <strong>{{ pad(durationMinutes) }}</strong>
-            <ion-button
-              class="wheel-button"
-              fill="clear"
-              aria-label="Retirer une minute"
-              [disabled]="durationMinutes <= 0"
-              (click)="changeTime('minutes', -1)"
-            >
-              <ion-icon name="chevron-down" />
-            </ion-button>
-            <span>m</span>
-          </div>
-
-          <span class="duration-separator">:</span>
-
-          <div class="duration-column active">
-            <ion-button
-              class="wheel-button"
-              fill="clear"
-              aria-label="Ajouter une seconde"
-              [disabled]="durationSeconds >= 59"
-              (click)="changeTime('seconds', 1)"
-            >
-              <ion-icon name="chevron-up" />
-            </ion-button>
-            <strong>{{ pad(durationSeconds) }}</strong>
-            <ion-button
-              class="wheel-button"
-              fill="clear"
-              aria-label="Retirer une seconde"
-              [disabled]="durationHours === 0 && durationMinutes === 0 && durationSeconds <= minDurationSeconds"
-              (click)="changeTime('seconds', -1)"
-            >
-              <ion-icon name="chevron-down" />
-            </ion-button>
-            <span>s</span>
-          </div>
-        </div>
-        <p class="duration-preview">Durée choisie : {{ durationPreview }}</p>
-        <ion-item>
-          <ion-label>Ambiance</ion-label>
-          <ion-select
-            [value]="selectedAmbiance"
-            (ionChange)="changeAmbiance($event.detail.value)"
-            interface="popover"
+        <div class="choice-header">
+          <ion-list-header>Durée</ion-list-header>
+          <ion-checkbox
+            class="unlimited-toggle"
+            labelPlacement="end"
+            [checked]="isUnlimited"
+            (ionChange)="setUnlimited($event.detail.checked)"
           >
-            @for (ambiance of ambiances; track ambiance.value) {
-              <ion-select-option [value]="ambiance.value">{{ ambiance.label }}</ion-select-option>
-            }
-          </ion-select>
-        </ion-item>
+            Sans limite
+          </ion-checkbox>
+        </div>
+
+        <div
+          class="duration-picker"
+          [class.disabled]="isUnlimited"
+          aria-label="Choisir la durée"
+        >
+          @for (reel of durationReels; track reel.part) {
+            <div class="duration-column" (wheel)="scrollTime(reel.part, $event)">
+              <span class="duration-label">{{ reel.label }}</span>
+              <button
+                type="button"
+                class="reel-value side"
+                [disabled]="isUnlimited || !canDecreaseDurationPart(reel.part)"
+                [attr.aria-label]="'Retirer une unité : ' + reel.ariaLabel"
+                (click)="changeTime(reel.part, -1)"
+              >
+                {{ pad(getPreviousDurationValue(reel.part)) }}
+              </button>
+              <button
+                type="button"
+                class="reel-value selected"
+                [disabled]="isUnlimited"
+                [attr.aria-label]="reel.ariaLabel + ' sélectionnées : ' + getDurationPartValue(reel.part)"
+                (click)="changeTime(reel.part, 1)"
+              >
+                {{ pad(getDurationPartValue(reel.part)) }}
+              </button>
+              <button
+                type="button"
+                class="reel-value side"
+                [disabled]="isUnlimited"
+                [attr.aria-label]="'Ajouter une unité : ' + reel.ariaLabel"
+                (click)="changeTime(reel.part, 1)"
+              >
+                {{ pad(getNextDurationValue(reel.part)) }}
+              </button>
+            </div>
+          }
+        </div>
+
+        <p class="duration-preview">Durée choisie : {{ durationPreview }}</p>
+
+        <ion-list-header>Sons</ion-list-header>
+        <div class="ambiance-grid" role="radiogroup" aria-label="Choisir une ambiance">
+          @for (ambiance of ambiances; track ambiance.value) {
+            <button
+              type="button"
+              class="ambiance-option"
+              role="radio"
+              [class.selected]="selectedAmbiance === ambiance.value"
+              [attr.aria-checked]="selectedAmbiance === ambiance.value"
+              (click)="changeAmbiance(ambiance.value)"
+            >
+              <ion-icon [name]="ambiance.icon" />
+              <span>{{ ambiance.label }}</span>
+            </button>
+          }
+        </div>
       </ion-list>
     }
 
-    <a class="back" href="/">Retour à l'accueil</a>
+    <a class="back" routerLink="/">Retour à l'accueil</a>
+    }
   </main>
 </ion-content>

@@ -6,42 +6,51 @@ export type TimerState = 'idle' | 'running' | 'paused' | 'completed';
 export interface TimerStatus {
   remainingSeconds: number;
   totalSeconds: number;
+  elapsedSeconds: number;
   progress: number;
   state: TimerState;
   hours: number;
   minutes: number;
   seconds: number;
+  isUnlimited: boolean;
 }
 
-const MIN_DURATION_SECONDS = 30;
-const MAX_DURATION_SECONDS = 9 * 60 * 60 + 59 * 60 + 59;
+const DEFAULT_DURATION_SECONDS = 10 * 60;
 
 @Injectable({
   providedIn: 'root',
 })
 export class TimerService {
-  private readonly durationSeconds$ = new BehaviorSubject<number>(10 * 60);
-  private readonly remaining$ = new BehaviorSubject<number>(10 * 60);
+  private readonly durationSeconds$ = new BehaviorSubject<number>(DEFAULT_DURATION_SECONDS);
+  private readonly remaining$ = new BehaviorSubject<number>(DEFAULT_DURATION_SECONDS);
+  private readonly elapsed$ = new BehaviorSubject<number>(0);
   private readonly state$ = new BehaviorSubject<TimerState>('idle');
+  private readonly unlimited$ = new BehaviorSubject<boolean>(false);
   private tickSubscription?: Subscription;
 
   readonly status$: Observable<TimerStatus> = combineLatest([
     this.durationSeconds$,
     this.remaining$,
+    this.elapsed$,
     this.state$,
+    this.unlimited$,
   ]).pipe(
-    map(([durationSeconds, remaining, state]) => {
+    map(([durationSeconds, remaining, elapsed, state, isUnlimited]) => {
       const total = durationSeconds;
       const safeRemaining = Math.max(0, remaining);
+      const safeElapsed = Math.max(0, elapsed);
+      const displaySeconds = isUnlimited ? safeElapsed : safeRemaining;
 
       return {
-        remainingSeconds: safeRemaining,
-        totalSeconds: total,
-        progress: total > 0 ? safeRemaining / total : 0,
+        remainingSeconds: displaySeconds,
+        totalSeconds: isUnlimited ? 0 : total,
+        elapsedSeconds: safeElapsed,
+        progress: isUnlimited ? 1 : total > 0 ? safeRemaining / total : 0,
         state,
-        hours: Math.floor(safeRemaining / 3600),
-        minutes: Math.floor((safeRemaining % 3600) / 60),
-        seconds: safeRemaining % 60,
+        hours: Math.floor(displaySeconds / 3600),
+        minutes: Math.floor((displaySeconds % 3600) / 60),
+        seconds: displaySeconds % 60,
+        isUnlimited,
       };
     }),
   );
@@ -64,8 +73,21 @@ export class TimerService {
     }
 
     const nextDuration = this.normalizeDurationSeconds(seconds);
+    this.unlimited$.next(false);
     this.durationSeconds$.next(nextDuration);
     this.remaining$.next(nextDuration);
+    this.elapsed$.next(0);
+    this.state$.next('idle');
+  }
+
+  setUnlimitedDuration(enabled: boolean): void {
+    if (this.state$.value === 'running' || this.state$.value === 'paused') {
+      return;
+    }
+
+    this.unlimited$.next(enabled);
+    this.remaining$.next(enabled ? 0 : this.durationSeconds$.value);
+    this.elapsed$.next(0);
     this.state$.next('idle');
   }
 
@@ -75,7 +97,18 @@ export class TimerService {
     }
 
     if (this.state$.value === 'idle' || this.state$.value === 'completed') {
-      this.remaining$.next(this.durationSeconds$.value);
+      this.elapsed$.next(0);
+
+      if (this.unlimited$.value) {
+        this.remaining$.next(0);
+      } else {
+        this.remaining$.next(this.durationSeconds$.value);
+      }
+    }
+
+    if (!this.unlimited$.value && this.durationSeconds$.value <= 0) {
+      this.state$.next('completed');
+      return;
     }
 
     this.state$.next('running');
@@ -102,12 +135,17 @@ export class TimerService {
 
   stop(): void {
     this.stopTicking();
-    this.remaining$.next(this.durationSeconds$.value);
+    this.remaining$.next(this.unlimited$.value ? 0 : this.durationSeconds$.value);
+    this.elapsed$.next(0);
     this.state$.next('idle');
   }
 
   adjustDuration(deltaMinutes: number): void {
     if (this.state$.value !== 'running' && this.state$.value !== 'paused') {
+      return;
+    }
+
+    if (this.unlimited$.value) {
       return;
     }
 
@@ -122,6 +160,7 @@ export class TimerService {
     this.remaining$.next(nextRemaining);
 
     if (nextRemaining === 0) {
+      this.elapsed$.next(nextDuration);
       this.state$.next('completed');
       this.stopTicking();
     }
@@ -131,15 +170,24 @@ export class TimerService {
     this.stopTicking();
 
     this.tickSubscription = interval(1000).subscribe(() => {
+      if (this.unlimited$.value) {
+        const nextElapsed = this.elapsed$.value + 1;
+        this.elapsed$.next(nextElapsed);
+        this.remaining$.next(nextElapsed);
+        return;
+      }
+
       const next = this.remaining$.value - 1;
 
       if (next <= 0) {
         this.remaining$.next(0);
+        this.elapsed$.next(this.durationSeconds$.value);
         this.state$.next('completed');
         this.stopTicking();
         return;
       }
 
+      this.elapsed$.next(this.elapsed$.value + 1);
       this.remaining$.next(next);
     });
   }
@@ -153,9 +201,9 @@ export class TimerService {
     const nextSeconds = Math.floor(Number(seconds));
 
     if (Number.isNaN(nextSeconds)) {
-      return MIN_DURATION_SECONDS;
+      return DEFAULT_DURATION_SECONDS;
     }
 
-    return Math.min(MAX_DURATION_SECONDS, Math.max(MIN_DURATION_SECONDS, nextSeconds));
+    return Math.max(0, nextSeconds);
   }
 }

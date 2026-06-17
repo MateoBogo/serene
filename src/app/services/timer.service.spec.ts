@@ -33,6 +33,31 @@ describe('TimerService', () => {
     expect(latest.seconds).toBe(30);
   });
 
+  it('should allow zero seconds and durations longer than nine hours', () => {
+    const longDuration = 12 * 60 * 60 + 5;
+
+    service.setDurationSeconds(0);
+    expect(latest.totalSeconds).toBe(0);
+    expect(latest.remainingSeconds).toBe(0);
+
+    service.setDurationSeconds(longDuration);
+    expect(latest.totalSeconds).toBe(longDuration);
+    expect(latest.remainingSeconds).toBe(longDuration);
+    expect(latest.hours).toBe(12);
+  });
+
+  it('should count elapsed time without completing unlimited sessions', fakeAsync(() => {
+    service.setUnlimitedDuration(true);
+    service.start();
+
+    tick(3_000);
+
+    expect(latest.state).toBe('running');
+    expect(latest.isUnlimited).toBeTrue();
+    expect(latest.elapsedSeconds).toBe(3);
+    expect(latest.remainingSeconds).toBe(3);
+  }));
+
   it('should tick down once per second after start', fakeAsync(() => {
     service.setDuration(1);
     service.start();

@@ -1,23 +1,38 @@
 import { Component, inject, OnDestroy } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import {
   IonButton,
+  IonCheckbox,
   IonContent,
   IonHeader,
   IonIcon,
-  IonItem,
   IonLabel,
   IonList,
   IonListHeader,
-  IonSelect,
-  IonSelectOption,
+  IonSegment,
+  IonSegmentButton,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { add, chevronDown, chevronUp, pause, play, remove, stop } from 'ionicons/icons';
+import {
+  add,
+  cloudyOutline,
+  leafOutline,
+  pause,
+  play,
+  rainyOutline,
+  remove,
+  stop,
+  thunderstormOutline,
+  volumeMuteOutline,
+  waterOutline,
+} from 'ionicons/icons';
 import { interval, Subscription } from 'rxjs';
 
+import { BreathingComponent } from '../components/breathing/breathing.component';
 import { TimerCircleComponent } from '../components/timer-circle/timer-circle.component';
+import { MOODS } from '../models/session.model';
 import { SessionService } from '../services/session.service';
 import { SettingsService } from '../services/settings.service';
 import { AmbianceKey, SoundService } from '../services/sound.service';
@@ -25,23 +40,31 @@ import { TimerService, TimerStatus } from '../services/timer.service';
 
 type DurationPart = 'hours' | 'minutes' | 'seconds';
 
+interface DurationReel {
+  ariaLabel: string;
+  label: string;
+  part: DurationPart;
+}
+
 @Component({
   selector: 'app-timer',
   templateUrl: 'timer.page.html',
   styleUrls: ['timer.page.scss'],
   imports: [
     IonButton,
+    IonCheckbox,
     IonContent,
     IonHeader,
     IonIcon,
-    IonItem,
     IonLabel,
     IonList,
     IonListHeader,
-    IonSelect,
-    IonSelectOption,
+    IonSegment,
+    IonSegmentButton,
     IonTitle,
     IonToolbar,
+    RouterLink,
+    BreathingComponent,
     TimerCircleComponent,
   ],
 })
@@ -49,23 +72,33 @@ export class TimerPage implements OnDestroy {
   status: TimerStatus = {
     remainingSeconds: 600,
     totalSeconds: 600,
+    elapsedSeconds: 0,
     progress: 1,
     state: 'idle',
     hours: 0,
     minutes: 10,
     seconds: 0,
+    isUnlimited: false,
   };
 
   hint = 'Prêt à méditer';
-  readonly maxHours = 9;
   readonly preparationDuration = 10;
-  readonly minDurationSeconds = 30;
   durationHours = 0;
   durationMinutes = 10;
   durationSeconds = 0;
+  isUnlimited = false;
   isPreparing = false;
   preparationRemaining = this.preparationDuration;
   selectedAmbiance: AmbianceKey = 'rain';
+  readonly moods = MOODS;
+  selectedMood?: number;
+  mode: 'timer' | 'breathing' = 'timer';
+  readonly durationReels: DurationReel[] = [
+    { ariaLabel: 'Heures', label: 'h', part: 'hours' },
+    { ariaLabel: 'Minutes', label: 'm', part: 'minutes' },
+    { ariaLabel: 'Secondes', label: 's', part: 'seconds' },
+  ];
+  private lastSessionId?: string;
   readonly sessionService = inject(SessionService);
   readonly settingsService = inject(SettingsService);
   readonly soundService = inject(SoundService);
@@ -76,7 +109,19 @@ export class TimerPage implements OnDestroy {
   private previousState = this.status.state;
 
   constructor() {
-    addIcons({ add, chevronDown, chevronUp, pause, play, remove, stop });
+    addIcons({
+      add,
+      cloudyOutline,
+      leafOutline,
+      pause,
+      play,
+      rainyOutline,
+      remove,
+      stop,
+      thunderstormOutline,
+      volumeMuteOutline,
+      waterOutline,
+    });
 
     const settings = this.settingsService.snapshot;
     this.selectedAmbiance = settings.defaultAmbiance;
@@ -89,11 +134,18 @@ export class TimerPage implements OnDestroy {
       this.status = status;
       this.hint = this.getHint(status.state);
 
-      if (status.state === 'completed' && this.previousState !== 'completed') {
-        this.sessionService.addCompletedSession({
+      if (
+        status.state === 'completed' &&
+        this.previousState !== 'completed' &&
+        !status.isUnlimited &&
+        status.totalSeconds > 0
+      ) {
+        const saved = this.sessionService.addCompletedSession({
           ambiance: this.selectedAmbiance,
           durationSeconds: status.totalSeconds,
         });
+        this.lastSessionId = saved?.id;
+        this.selectedMood = undefined;
         this.soundService.playEnd();
       }
 
@@ -109,11 +161,13 @@ export class TimerPage implements OnDestroy {
     return {
       remainingSeconds: this.preparationRemaining,
       totalSeconds: this.preparationDuration,
+      elapsedSeconds: this.preparationDuration - this.preparationRemaining,
       progress: this.preparationRemaining / this.preparationDuration,
       state: 'running',
       hours: 0,
       minutes: 0,
       seconds: this.preparationRemaining,
+      isUnlimited: false,
     };
   }
 
@@ -134,6 +188,14 @@ export class TimerPage implements OnDestroy {
       return `Début dans : ${this.preparationRemaining} s`;
     }
 
+    if (this.status.isUnlimited) {
+      if (this.status.state === 'running' || this.status.state === 'paused') {
+        return `Temps écoulé : ${this.formatDuration(this.status.elapsedSeconds)}`;
+      }
+
+      return 'Sans limite : arrête quand tu veux';
+    }
+
     const end = new Date(Date.now() + this.status.remainingSeconds * 1000);
     const time = end.toLocaleTimeString('fr-FR', {
       hour: '2-digit',
@@ -144,11 +206,19 @@ export class TimerPage implements OnDestroy {
   }
 
   get durationPreview(): string {
+    if (this.isUnlimited) {
+      return 'Sans limite';
+    }
+
     return this.formatDuration(this.selectedDurationSeconds);
   }
 
+  get canStart(): boolean {
+    return this.isUnlimited || this.selectedDurationSeconds > 0;
+  }
+
   start(): void {
-    if (this.isPreparing || this.status.state === 'running') {
+    if (this.isPreparing || this.status.state === 'running' || !this.canStart) {
       return;
     }
 
@@ -168,28 +238,69 @@ export class TimerPage implements OnDestroy {
   }
 
   stop(): void {
+    this.saveUnlimitedSessionIfNeeded();
     this.cancelPreparation();
     this.timerService.stop();
     this.soundService.stopAll();
+    this.clearMood();
   }
 
   close(): void {
+    this.saveUnlimitedSessionIfNeeded();
     this.cancelPreparation();
     this.timerService.stop();
     this.soundService.stopAll();
+    this.clearMood();
+  }
+
+  setMode(value: string | number | undefined): void {
+    const next = value === 'breathing' ? 'breathing' : 'timer';
+
+    if (next === this.mode) {
+      return;
+    }
+
+    if (next === 'breathing') {
+      this.stop();
+    }
+
+    this.mode = next;
   }
 
   changeAmbiance(value: AmbianceKey): void {
     this.selectedAmbiance = value;
   }
 
-  changeTime(part: DurationPart, delta: number): void {
+  setUnlimited(checked: boolean): void {
     if (this.isPreparing || this.status.state !== 'idle') {
       return;
     }
 
+    this.isUnlimited = checked;
+
+    if (checked) {
+      this.timerService.setUnlimitedDuration(true);
+      return;
+    }
+
+    this.applyPickerDuration();
+  }
+
+  chooseMood(mood: number): void {
+    this.selectedMood = mood;
+
+    if (this.lastSessionId) {
+      this.sessionService.setMood(this.lastSessionId, mood);
+    }
+  }
+
+  changeTime(part: DurationPart, delta: number): void {
+    if (this.isUnlimited || this.isPreparing || this.status.state !== 'idle') {
+      return;
+    }
+
     if (part === 'hours') {
-      this.durationHours = this.clamp(this.durationHours + delta, 0, this.maxHours);
+      this.durationHours = Math.max(0, this.durationHours + delta);
     }
 
     if (part === 'minutes') {
@@ -203,11 +314,81 @@ export class TimerPage implements OnDestroy {
     this.applyPickerDuration();
   }
 
+  selectTime(part: DurationPart, value: number): void {
+    if (this.isUnlimited || this.isPreparing || this.status.state !== 'idle') {
+      return;
+    }
+
+    const nextValue = Math.floor(Number(value));
+
+    if (Number.isNaN(nextValue)) {
+      return;
+    }
+
+    if (part === 'hours') {
+      this.durationHours = Math.max(0, nextValue);
+    }
+
+    if (part === 'minutes') {
+      this.durationMinutes = this.clamp(nextValue, 0, 59);
+    }
+
+    if (part === 'seconds') {
+      this.durationSeconds = this.clamp(nextValue, 0, 59);
+    }
+
+    this.applyPickerDuration();
+  }
+
+  scrollTime(part: DurationPart, event: WheelEvent): void {
+    event.preventDefault();
+
+    if (Math.abs(event.deltaY) < 1) {
+      return;
+    }
+
+    this.changeTime(part, event.deltaY > 0 ? 1 : -1);
+  }
+
+  getDurationPartValue(part: DurationPart): number {
+    if (part === 'hours') {
+      return this.durationHours;
+    }
+
+    if (part === 'minutes') {
+      return this.durationMinutes;
+    }
+
+    return this.durationSeconds;
+  }
+
+  getPreviousDurationValue(part: DurationPart): number {
+    return Math.max(0, this.getDurationPartValue(part) - 1);
+  }
+
+  getNextDurationValue(part: DurationPart): number {
+    const current = this.getDurationPartValue(part);
+
+    return part === 'hours' ? current + 1 : this.clamp(current + 1, 0, 59);
+  }
+
+  canDecreaseDurationPart(part: DurationPart): boolean {
+    return this.getDurationPartValue(part) > 0;
+  }
+
   increaseDuration(): void {
+    if (this.status.isUnlimited) {
+      return;
+    }
+
     this.timerService.adjustDuration(1);
   }
 
   decreaseDuration(): void {
+    if (this.status.isUnlimited) {
+      return;
+    }
+
     this.timerService.adjustDuration(-1);
   }
 
@@ -237,6 +418,11 @@ export class TimerPage implements OnDestroy {
     this.timerService.start();
   }
 
+  private clearMood(): void {
+    this.lastSessionId = undefined;
+    this.selectedMood = undefined;
+  }
+
   private cancelPreparation(): void {
     this.preparationSub?.unsubscribe();
     this.preparationSub = undefined;
@@ -245,16 +431,22 @@ export class TimerPage implements OnDestroy {
   }
 
   private applyPickerDuration(): void {
-    let totalSeconds = this.selectedDurationSeconds;
+    this.timerService.setDurationSeconds(this.selectedDurationSeconds);
+  }
 
-    if (totalSeconds < this.minDurationSeconds) {
-      totalSeconds = this.minDurationSeconds;
-      this.durationHours = 0;
-      this.durationMinutes = 0;
-      this.durationSeconds = this.minDurationSeconds;
+  private saveUnlimitedSessionIfNeeded(): void {
+    if (
+      !this.status.isUnlimited ||
+      this.status.elapsedSeconds <= 0 ||
+      (this.status.state !== 'running' && this.status.state !== 'paused')
+    ) {
+      return;
     }
 
-    this.timerService.setDurationSeconds(totalSeconds);
+    this.sessionService.addCompletedSession({
+      ambiance: this.selectedAmbiance,
+      durationSeconds: this.status.elapsedSeconds,
+    });
   }
 
   private get selectedDurationSeconds(): number {

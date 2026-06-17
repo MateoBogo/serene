@@ -9,7 +9,7 @@ import { TimerStatus } from '../../services/timer.service';
     <svg
       viewBox="0 0 200 200"
       role="img"
-      aria-label="Temps restant"
+      [attr.aria-label]="status.isUnlimited ? 'Temps de méditation' : 'Temps restant'"
       [class.preparing]="preparing"
     >
       <circle cx="100" cy="100" r="90" class="track" />
@@ -22,7 +22,7 @@ import { TimerStatus } from '../../services/timer.service';
         [style.stroke-dashoffset]="progressOffset"
       />
       <text x="100" y="94" class="value" text-anchor="middle">
-        {{ formatTime(status.remainingSeconds) }}
+        {{ formatTime(displaySeconds) }}
       </text>
       <text x="100" y="120" class="hint" text-anchor="middle">
         {{ hint }}
@@ -89,6 +89,10 @@ export class TimerCircleComponent {
   @Input() preparing = false;
 
   readonly circumference = 565.48;
+
+  get displaySeconds(): number {
+    return this.status.isUnlimited ? this.status.elapsedSeconds : this.status.remainingSeconds;
+  }
 
   get progressOffset(): number {
     return this.circumference * (1 - (this.status.progress || 0));
