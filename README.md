@@ -2,8 +2,8 @@
 
 Petit projet Ionic / Angular fait pour le cours.
 
-L'application est une base pour une app de meditation : accueil, minuteur,
-historique, statistiques, reglages et page a propos.
+L'application est une base pour une app de meditation simple : minuteur,
+suivi des statistiques et historique par jour.
 
 ## Prerequis
 
@@ -93,7 +93,17 @@ Pour l'arreter en ligne de commande :
 docker compose down
 ```
 
+## Navigation
+
+L'application utilise une barre d'onglets Ionic (`ion-tabs`) en bas de l'ecran :
+Mediter et Stats.
+
+Le minuteur permet de choisir une duree avec une roulette heures/minutes/secondes
+ou de lancer une session sans limite. Les sons disponibles sont affiches
+directement sous forme de boutons.
+
 ## Notes
 
-Le projet est encore en cours. Certaines donnees sont encore des exemples, le
-stockage local et les vraies statistiques seront ajoutes plus tard.
+Le stockage local est en place : les sessions terminees, les statistiques de la
+semaine et les preferences (duree par defaut, ambiance, theme clair/sombre) sont
+enregistrees dans le navigateur via `localStorage`.

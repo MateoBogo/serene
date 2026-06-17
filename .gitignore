@@ -23,6 +23,10 @@ log.txt
 /platforms
 /plugins
 
+# Local agent/browser tooling
+/.omc
+/.playwright-cli
+
 # Compiled output
 /dist
 /tmp

@@ -7,12 +7,8 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'home',
+        redirectTo: 'timer',
         pathMatch: 'full',
-      },
-      {
-        path: 'home',
-        loadComponent: () => import('./home/home.page').then((m) => m.HomePage),
       },
       {
         path: 'timer',
@@ -21,10 +17,6 @@ export const routes: Routes = [
       {
         path: 'stats',
         loadComponent: () => import('./stats/stats.page').then((m) => m.StatsPage),
-      },
-      {
-        path: 'settings',
-        loadComponent: () => import('./settings/settings.page').then((m) => m.SettingsPage),
       },
     ],
   },
