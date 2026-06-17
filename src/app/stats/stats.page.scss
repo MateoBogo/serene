@@ -5,7 +5,7 @@
 .panel {
   border: 1px solid var(--ion-color-step-250, #d7d8da);
   border-radius: 8px;
-  margin: 0 auto;
+  margin: 0 auto 16px;
   max-width: 620px;
   padding: 18px;
 }
@@ -15,6 +15,11 @@ h1 {
   margin: 0 0 16px;
 }
 
+h2 {
+  font-size: 18px;
+  margin: 0 0 14px;
+}
+
 .stats {
   display: grid;
   gap: 12px;
@@ -22,18 +27,18 @@ h1 {
   margin-bottom: 18px;
 }
 
-article {
+.stats article {
   border: 1px solid var(--ion-color-step-200, #e1e1e1);
   border-radius: 6px;
   padding: 14px;
 }
 
-strong {
+.stats strong {
   display: block;
   font-size: 30px;
 }
 
-span,
+.stats span,
 p {
   color: var(--ion-color-medium);
 }
@@ -42,7 +47,59 @@ p {
   line-height: 1.5;
 }
 
-a {
-  color: inherit;
-  font-weight: 600;
+.day-panel h2 {
+  text-transform: capitalize;
+}
+
+.session-list {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.session-list li {
+  align-items: center;
+  border: 1px solid var(--ion-color-step-200, #e1e1e1);
+  border-radius: 6px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: auto 1fr auto;
+  padding: 12px;
+}
+
+.session-mood {
+  font-size: 24px;
+}
+
+.session-main {
+  display: grid;
+  gap: 2px;
+}
+
+.session-main strong {
+  color: var(--serene-text);
+  font-size: 16px;
+}
+
+.session-main span,
+.session-duration {
+  color: var(--ion-color-medium);
+}
+
+.session-duration {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+@media (max-width: 420px) {
+  .session-list li {
+    align-items: flex-start;
+    grid-template-columns: auto 1fr;
+  }
+
+  .session-duration {
+    grid-column: 2;
+  }
 }

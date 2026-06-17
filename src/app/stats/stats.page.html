@@ -27,13 +27,45 @@
           <strong>{{ averageMinutes }}</strong>
           <span>min en moyenne</span>
         </article>
+        <article>
+          <strong>{{ moodCount > 0 ? moodEmoji : '–' }}</strong>
+          <span>{{ moodCount > 0 ? 'humeur moyenne' : 'humeur (à venir)' }}</span>
+        </article>
       </div>
       @if (sessionCount === 0) {
         <p>Aucune session terminée cette semaine pour le moment.</p>
       } @else {
         <p>Ces chiffres sont calculés avec les sessions terminées sur les 7 derniers jours.</p>
       }
-      <a href="/">Retour à l'accueil</a>
+    </section>
+
+    <section class="panel">
+      <h2>Calendrier du mois</h2>
+      <app-meditation-heatmap
+        [selectedDayKey]="selectedDayKey"
+        (daySelected)="selectDay($event)"
+      />
+    </section>
+
+    <section class="panel day-panel">
+      <h2>{{ selectedDayLabel }}</h2>
+
+      @if (selectedDaySessions.length === 0) {
+        <p>Aucune session terminée ce jour-là.</p>
+      } @else {
+        <ul class="session-list">
+          @for (session of selectedDaySessions; track session.id) {
+            <li>
+              <span class="session-mood" aria-hidden="true">{{ session.mood }}</span>
+              <div class="session-main">
+                <strong>{{ session.time }}</strong>
+                <span>Ambiance : {{ session.ambiance }}</span>
+              </div>
+              <span class="session-duration">{{ session.duration }}</span>
+            </li>
+          }
+        </ul>
+      }
     </section>
   </main>
 </ion-content>
